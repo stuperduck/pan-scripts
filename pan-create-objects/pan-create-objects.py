@@ -251,8 +251,6 @@ def main():
         print ""
         print "Connection to Firewall detected..."
 
-        dg = []
-
         addr_object_select = query_yes_no("Would you like to add address objects?")
 
         if addr_object_select:
