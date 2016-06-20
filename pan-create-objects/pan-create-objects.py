@@ -1,5 +1,17 @@
 #!/usr/bin/python
 
+"""
+name: pan_create_objects
+description: Bulk create address objects and rules in Panorama or firewall
+author: Steve Barber
+company: Palo Alto Networks
+prerequisites: python 2.7.5+ with the libraries listed in the 'import' statements.
+last updated: 06/20/2016
+
+Change log:
+** 1.0 - created script
+
+"""
 import getpass
 import argparse
 import urllib
