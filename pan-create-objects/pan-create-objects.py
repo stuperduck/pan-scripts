@@ -247,6 +247,74 @@ def main():
 
                     send_api_request(url, valuesA)
 
+    if mode == "f":
+        print ""
+        print "Connection to Firewall detected..."
+
+        dg = []
+
+        addr_object_select = query_yes_no("Would you like to add address objects?")
+
+        if addr_object_select:
+
+            xpathAddr = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address"
+            xpathRule = "/config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase" \
+                        "/security/rules"
+
+            rule_create_select = query_yes_no("Would you like to add associated rules?")
+
+            if rule_create_select:
+                a_addr = raw_input("Enter base name for source address: ")
+                a_subnet = unicode(raw_input("Enter subnet in CIDR for the SRC addresses (e.g. '10.1.0.0/16'): "))
+                b_addr = raw_input("Enter base name for destination address: ")
+                b_subnet = unicode(raw_input("Enter subnet in CIDR for the DST addresses (e.g. '20.1.0.0/16'): "))
+                addr_count = raw_input("How many addresses would you like to create? ")
+
+                for x in range(int(addr_count)):
+                    a_addr_name = a_addr + "-" + str(x + 1)
+                    b_addr_name = b_addr + "-" + str(x + 1)
+                    a_subnet = ipaddress.ip_network(a_subnet)
+                    b_subnet = ipaddress.ip_network(b_subnet)
+                    a_address = a_subnet[x + 1]
+                    b_address = b_subnet[x + 1]
+
+                    elementA = '<entry name="' + a_addr_name + '"><ip-netmask>' + str(a_address) + \
+                               '</ip-netmask></entry>'
+                    elementB = '<entry name="' + b_addr_name + '"><ip-netmask>' + str(b_address) + \
+                               '</ip-netmask></entry>'
+                    valuesA = {'type': 'config', 'action': 'set', 'key': key, 'xpath': xpathAddr, 'element': elementA}
+                    valuesB = {'type': 'config', 'action': 'set', 'key': key, 'xpath': xpathAddr, 'element': elementB}
+
+                    send_api_request(url, valuesA)
+                    send_api_request(url, valuesB)
+
+                    elementRule = '<entry name="' + a_addr_name + '-' + b_addr_name + '"><to><member>Untrust</member>' \
+                                '</to><from><member>Trust</member></from><source><member>' + a_addr_name + \
+                                '</member></source><destination><member>' + b_addr_name + '</member></destination>' \
+                                '<source-user><member>any</member></source-user><category><member>any</member>' \
+                                '</category><application><member>any</member></application><service>' \
+                                '<member>application-default</member></service><hip-profiles><member>any</member>' \
+                                '</hip-profiles><action>allow</action></entry>'
+                    valuesRule = {'type': 'config', 'action': 'set', 'key': key, 'xpath': xpathRule, 'element': elementRule}
+
+                    send_api_request(url, valuesRule)
+            else:
+                a_addr = raw_input("Enter base name for new addresses: ")
+                a_subnet = unicode(raw_input("Enter subnet in CIDR for the new addresses (e.g. '10.1.0.0/16'): "))
+                addr_count = int(raw_input("How many addresses would you like to create? "))
+
+                for x in range(int(addr_count)):
+                    addr_name = a_addr + "-" + str(x + 1)
+                    subnet = ipaddress.ip_network(a_subnet)
+                    address = subnet[x + 1]
+
+                    elementA = '<entry name="' + addr_name + '"><ip-netmask>' + str(address) + '</ip-netmask></entry>'
+                    valuesA = {'type': 'config', 'action': 'set', 'key': key, 'xpath': xpathAddr, 'element': elementA}
+
+                    send_api_request(url, valuesA)
+        else:
+            sys.exit()
+
     print ""
     print "Script finished!"
     print ""
