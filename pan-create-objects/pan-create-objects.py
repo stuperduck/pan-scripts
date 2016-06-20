@@ -12,16 +12,21 @@ Change log:
 ** 1.0 - created script
 
 """
-import getpass
-import argparse
-import urllib
-import urllib2
-import ssl
-import sys
-import httplib
-import ipaddress
-from lxml import etree
-from xml.dom import minidom
+try:
+    import getpass
+    import argparse
+    import urllib
+    import urllib2
+    import ssl
+    import sys
+    import httplib
+    import ipaddress
+    from lxml import etree
+    from xml.dom import minidom
+except ImportError:
+    raise ImportError("The following modules must be installed: lxml, ipaddress.  "
+                      "Install them by running 'sudo pip install <module name>'")
+
 
 ssl._create_default_https_context = ssl._create_unverified_context
 

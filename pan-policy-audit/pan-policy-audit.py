@@ -37,7 +37,6 @@ try:
 except ImportError:
     raise ImportError("The following modules must be installed: lxml, openpyxl.  "
                       "Install them by running 'sudo pip install <module name>'")
-    # sys.exit(1)
 
 
 def make_parser():
