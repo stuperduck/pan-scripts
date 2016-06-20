@@ -29,9 +29,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--ip", help="Name or IP address of the firewall/Panorama")
 parser.add_argument("-u", "--username", help="User login")
 parser.add_argument("-p", "--password", help="Login password")
-parser.add_argument("-k", "--key", help="API Key")
-parser.add_argument("-x", "--xpath", help="x-path")
-parser.add_argument("-e", "--element", help="Element")
 args = parser.parse_args()
 
 if args.ip:
