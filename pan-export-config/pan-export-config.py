@@ -107,7 +107,6 @@ def main():
 
     key = get_api_key(ip, user, pw)
     hostname, mode = get_sys_info(ip, key)
-    print fn
 
     if mode == "p":
         print ""
