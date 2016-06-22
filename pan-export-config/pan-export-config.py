@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--ip", help="Name or IP address of the firewall/Panorama")
 parser.add_argument("-u", "--username", help="User login")
 parser.add_argument("-p", "--password", help="Login password")
-parser.add_argument("-f", "--filename", default='export.xml', type=str, help="Export filename")
+parser.add_argument("-f", "--filename", default="export.xml", type=str, help="Export filename")
 args = parser.parse_args()
 
 if args.ip:
@@ -107,6 +107,7 @@ def main():
 
     key = get_api_key(ip, user, pw)
     hostname, mode = get_sys_info(ip, key)
+    print fn
 
     if mode == "p":
         print ""
