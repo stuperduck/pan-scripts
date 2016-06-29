@@ -135,6 +135,7 @@ def get_sys_info(ip, key):
     except:
         print("Unable to get system information.  Check credentials and try again")
 
+
 def get_dg(ip, key, dg_specific):
 
     conn = httplib.HTTPSConnection(ip, context=ssl._create_unverified_context())
