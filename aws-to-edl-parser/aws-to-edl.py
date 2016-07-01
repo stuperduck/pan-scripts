@@ -6,21 +6,6 @@ import sys
 
 
 def merge_prefixes(payload):
-    """
-    Converts the AWS services JSON payload into a PAN external dynamic list compatible format.
-
-    Arguments:
-
-        payload => JSON object
-
-    Returns:
-
-        A list of tuples formatted as (ip_prefix, regions, services)
-
-        ip_prefix => CIDR prefix
-        regions   => list of all regions the prefix is associated with
-        services  => list all services the prefix is associated with
-    """
 
     regions, services = {}, {}
 
@@ -46,19 +31,6 @@ def merge_prefixes(payload):
 
 
 def prefixes(includes=None, excludes=None, regions=None):
-    """
-    Filters the AWS services JSON payload by regions and/or services.
-
-    Arguments:
-
-        includes => list of services to allow
-        excludes => list of services to disallow
-        regions  => list of regions to allow
-
-    Returns:
-
-        A list of prefixes
-    """
 
     f = file('out.txt', 'w')
     sys.stdout = f
@@ -107,9 +79,6 @@ def prefixes(includes=None, excludes=None, regions=None):
     f.close()
 
 if __name__ == '__main__':
-    # Lets get all the IPs associated with AMAZON services in us-east-1 that
-    # are NOT used for EC2 instances
-    #print(prefixes(includes=['AMAZON'], excludes=['EC2'], regions=['us-east-1']))
-    #print(prefixes(includes=['AMAZON']))
-    #prefixes(includes=['AMAZON'])
+
+    #prefixes(includes=['AMAZON'], excludes=['EC2'], regions=['us-east-1'])
     prefixes(includes=['EC2'])
