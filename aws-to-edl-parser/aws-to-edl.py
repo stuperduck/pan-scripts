@@ -3,6 +3,7 @@
 import urllib2
 import json
 import sys
+from datetime import datetime
 
 
 def merge_prefixes(payload):
@@ -68,6 +69,8 @@ def prefixes(includes=None, excludes=None, regions=None):
                 return True
 
     filtered = []
+
+    print("# UPDATED: " + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
     for ip_prefix, _regions, _services in merge_prefixes(payload):
         if valid_region(_regions):
