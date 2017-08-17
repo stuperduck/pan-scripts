@@ -19,6 +19,7 @@ try:
     import urllib2
     import ssl
     import httplib
+    import os.path
     from xml.dom import minidom
 except ImportError:
     raise ImportError("Verify the proper python modules are installed")
@@ -30,7 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--ip", help="Name or IP address of the firewall/Panorama")
 parser.add_argument("-u", "--username", help="User login")
 parser.add_argument("-p", "--password", help="Login password")
-parser.add_argument("-f", "--filename", default="export.xml", type=str, help="Export filename")
+parser.add_argument("-f", "--filename", type=str, help="Export filename")
 args = parser.parse_args()
 
 if args.ip:
@@ -48,21 +49,23 @@ else:
 if args.filename:
     fn = args.filename
 else:
-    fn = raw_input("Export to the following file: ")
+    fn = raw_input("Export configuration to the following file: ")
 
 
 def send_api_request(url, values):
 
+    context = ssl._create_unverified_context()
+
     data = urllib.urlencode(values)
     request = urllib2.Request(url, data, )
-    response = urllib2.urlopen(request).read()
+    response = urllib2.urlopen(request, context=context).read()
 
     return minidom.parseString(response)
 
 
-def get_api_key(hostname, username, password):
+def get_api_key(ip, username, password):
 
-    url = 'https://' + hostname + '/api'
+    url = 'https://' + ip + '/api'
     values = {'type': 'keygen', 'user': username, 'password': password}
     parsedKey = send_api_request(url, values)
     nodes = parsedKey.getElementsByTagName('key')
@@ -106,21 +109,28 @@ def get_sys_info(ip, key):
 def main():
 
     key = get_api_key(ip, user, pw)
+    print ""
+    print ""
+    print "API key for user '" + user + "' = " + key
+
     hostname, mode = get_sys_info(ip, key)
 
     if mode == "p":
         print ""
         print "Connection to Panorama detected..."
         testfile = urllib.URLopener()
+        print "Exporting Panorama configuration..."
         testfile.retrieve('https://' + ip + '/api/?type=export&category=configuration&key=' + key, fn)
 
     if mode == "f":
         print ""
         print "Connection to Firewall detected..."
         testfile = urllib.URLopener()
+        print "Exporting firewall configuration..."
         testfile.retrieve('https://' + ip + '/api/?type=export&category=configuration&key=' + key, fn)
 
     print ""
+    print "File saved to: " + os.path.realpath(fn)
     print "Script finished!"
     print ""
 
