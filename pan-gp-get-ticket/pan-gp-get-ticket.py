@@ -37,31 +37,41 @@ parser.add_argument("-d", "--duration", type=str, help="Time ticket is allowed t
 parser.add_argument("-P", "--portal", type=str, help="GlobalProtect portal name")
 args = parser.parse_args()
 
-if args.ip:
-    ip = args.ip
-else:
-    ip = raw_input("Enter the name or IP of the firewall/Panorama: ")
-if args.username:
-    user = args.username
-else:
-    user = raw_input("Enter the user login: ")
-if args.password:
-    pw = args.password
-else:
-    pw = getpass.getpass()
-if args.ticket:
-    ticket = args.ticket
-else:
-    ticket = raw_input("Enter ticket from client: ")
-if args.duration:
-    duration = args.duration
-else:
-    duration = raw_input("Enter duration ticket is allowed (in min): ")
-if args.portal:
-    portal = args.portal
-else:
-    #portal = raw_input("Enter name of GP Portal: ")
-    portal = "GP_Portal_Int"
+print '\n\'
+
+try:
+    if args.ip:
+        ip = args.ip
+    else:
+        ip = raw_input("Enter the name or IP of the firewall/Panorama: ")
+    if args.username:
+        user = args.username
+    else:
+        user = raw_input("Enter the user login: ")
+    if args.password:
+        pw = args.password
+    else:
+        pw = getpass.getpass()
+    if args.ticket:
+        ticket = args.ticket
+    else:
+        ticket = raw_input("Enter ticket from client: ")
+    if args.duration:
+        duration = args.duration
+    else:
+        duration = raw_input("Enter duration ticket is allowed (in min): ")
+    if args.portal:
+        portal = args.portal
+    else:
+        #portal = raw_input("Enter name of GP Portal: ")
+        portal = "GP_Portal_Int"
+except KeyboardInterrupt:
+    print '\n'
+    print "Keyboard interrupt.  Exiting script."
+    try:
+        exit()
+    except SystemExit:
+        os._exit()
 
 
 def send_api_request(url, values):
