@@ -57,7 +57,7 @@ try:
     if args.portal:
         portal = args.portal
     else:
-        #portal = raw_input("Enter name of GP Portal: ")
+        # portal = raw_input("Enter name of GP Portal: ")
         portal = "GP_Portal_Int"
     agent_config = "GP_Int_Agent_Config"
 
@@ -92,6 +92,7 @@ def get_api_key(ip, username, password):
     key = nodes[0].firstChild.nodeValue
     return key
 
+
 def gen_passcode():
 
     characters = string.ascii_letters + string.digits + ""
@@ -99,11 +100,13 @@ def gen_passcode():
     print passcode
     return passcode
 
+
 def write_passcode(passcode):
 
     file_object = open("passcode.txt", "w")
     file_object.write(passcode)
     file_object.close()
+
 
 def get_sys_info(ip, key):
 
@@ -137,9 +140,13 @@ def get_sys_info(ip, key):
     except:
         print("Unable to get system information.  Check credentials and try again")
 
+
 def set_passcode(ip, key, passcode):
 
-    #urlencoded = urllib.quote_plus(passcode)
+    # urlencoded = urllib.quote_plus(passcode)
+    setsuccess = False
+    commitsuccess = False
+    setstatus = ""
     conn = httplib.HTTPSConnection(ip, context=ssl._create_unverified_context())
     request_str = "/api/?type=config&action=edit&xpath=/config/devices/entry[@name='localhost.localdomain']/vsys/" \
                   "entry[@name='vsys1']/global-protect/global-protect-portal/entry[@name='" + portal + "']/" \
@@ -150,12 +157,19 @@ def set_passcode(ip, key, passcode):
     data = r.read()
     conn.close()
     r.close()
+    setroot = etree.fromstring(data)
+    # print etree.tostring(setroot)
 
-    doc = etree.XML(data.strip())
-    setmsg = doc.findtext("msg")
-    print "Response from firewall: " + setmsg
+    for x in setroot.iter():
+        if x.tag == "response":
+            if x.attrib["status"] == "success":
+                setsuccess = True
+                print "Passcode was set successfully!"
+            else:
+                print "Passcode failed to be changed.  Check that the portal and agent config are set correctly and " \
+                        "try again."
 
-    if setmsg == "command succeeded":
+    if setsuccess == True:
         conn = httplib.HTTPSConnection(ip, context=ssl._create_unverified_context())
         request_str = "/api/?type=commit&cmd=<commit></commit>&key="
         conn.request("GET", request_str + key)
@@ -164,11 +178,17 @@ def set_passcode(ip, key, passcode):
         conn.close()
         r.close()
 
-        #doc = etree.XML(data.strip())
-        #commitmsg = doc.findtext("job")
-        #print "Response from firewall: " + commitmsg
-    else:
-        print "Failed to set passcode.  Commit aborted."
+        commitroot = etree.fromstring(data)
+        #print etree.tostring(commitroot)
+
+        for x in commitroot.iter():
+            if x.tag == "response":
+                if x.attrib["status"] == "success":
+                    commitsuccess = True
+                    print "Successfully issued commit on firewall!"
+                else:
+                    print "Failed to issue commit on firewall.  Check the firewall system log for more details."
+
 
 def main():
 
