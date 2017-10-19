@@ -2,7 +2,7 @@
 
 """
 name: pan-gp-get-ticket
-description: Export config from Panorama
+description: Generate GlobalProtect Ticket Response
 author: Steve Barber
 company: Palo Alto Networks
 prerequisites: python 2.7.5+ with the libraries listed in the 'import' statements.
