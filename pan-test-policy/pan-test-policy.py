@@ -152,7 +152,7 @@ def read_csv(ip, key):
         for item in header:
             try:
                 if row['Source address']:
-                    csvcmd = csvcmd + '<source>' + row['Source address'] + '</source>'
+                    csvcmd = '<source>' + row['Source address'] + '</source>'
                 if row['Source Zone']:
                     csvcmd = csvcmd + '<from>' + row['Source Zone'] + '</from>'
                 if row['Destination address']:
