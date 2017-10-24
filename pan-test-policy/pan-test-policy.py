@@ -37,6 +37,7 @@ parser.add_argument("-i", "--ip", help="Name or IP address of the firewall/Panor
 parser.add_argument("-f", "--filename", help="Log file name")
 parser.add_argument("-u", "--username", help="User login")
 parser.add_argument("-p", "--password", help="Login password")
+parser.add_argument("-t", "--tab", help="Tab delimited log file", action='store_true')
 args = parser.parse_args()
 
 print '\n'
@@ -58,6 +59,10 @@ try:
         pw = args.password
     else:
         pw = getpass.getpass()
+    if args.tab:
+        tdelimited = True
+    else:
+        tdelimited = False
 
 except KeyboardInterrupt:
     print '\n'
@@ -127,77 +132,86 @@ def get_sys_info(ip, key):
 def read_csv(ip, key):
 
     csvcmd = ""
-    with open(file, 'r') as csvfile:
+    if tdelimited:
+        csvfile = open(file, 'rU')
+        reader = csv.DictReader(csvfile, delimiter='\t')
+        header = reader.fieldnames
+        # ** DEBUG - Print column headers **
+        # print header
+    else:
+        csvfile = open(file, 'rU')
         reader = csv.DictReader(csvfile)
         header = reader.fieldnames
-        i = 1
+        # ** DEBUG - Print column headers **
+        # print header
 
-        for row in reader:
-            i = i + 1
-            for item in header:
-                try:
-                    if row['Source address']:
-                        csvcmd = '<source>' + row['Source address'] + '</source>'
-                    if row['Source Zone']:
-                        csvcmd = csvcmd + '<from>' + row['Source Zone'] + '</from>'
-                    if row['Destination address']:
-                        csvcmd = csvcmd + '<destination>' + row['Destination address'] + '</destination>'
-                    if row['Destination Zone']:
-                        csvcmd = csvcmd + '<to>' + row['Destination Zone'] + '</to>'
-                    if row['Source User']:
-                        csvcmd = csvcmd + '<source-user>' + row['Source User'] + '</source-user>'
-                    if row['Application']:
-                        csvcmd = csvcmd + '<application>' + row['Application'] + '</application>'
-                    if row['Destination Port']:
-                        csvcmd = csvcmd + '<destination-port>' + row['Destination Port'] + '</destination-port>'
-                    if row['IP Protocol']:
-                        if row['IP Protocol'] == 'tcp':
-                            csvcmd = csvcmd + '<protocol>6</protocol>'
-                        if row['IP Protocol'] == 'udp':
-                            csvcmd = csvcmd + '<protocol>17</protocol>'
-                        if row['IP Protocol'] == 'icmp':
-                            csvcmd = csvcmd + '<protocol>1</protocol>'
-                        if row['IP Protocol'] == 'esp':
-                            csvcmd = csvcmd + '<protocol>50</protocol>'
-                        if row['IP Protocol'] == 'ah':
-                            csvcmd = csvcmd + '<protocol>51</protocol>'
-                    if row['Category']:
-                        # ** Placeholder for Categories - custom categories error out.  possible bug **
-                        # csvcmd = csvcmd + '<category>' + row['Category'] + '</category>'
-                        csvcmd = csvcmd + '<category>any</category>'
-                except:
-                    pass
+    i = 1
 
-            conn = httplib.HTTPSConnection(ip, context=ssl._create_unverified_context())
-            request_str = "/api/?type=op&cmd=<test><security-policy-match>" + csvcmd + "</security-policy-match></test>&key="
-
-            conn.request("GET", request_str + key)
-            r = conn.getresponse()
-            data = r.read()
-            conn.close()
-            r.close()
-
+    for row in reader:
+        i = i + 1
+        for item in header:
             try:
-                opresponse = etree.fromstring(data)
-
-                for x in opresponse.iter():
-                    if x.tag == "response":
-                        if not x.attrib["status"] == "success":
-                            print "Test failed.  Check the firewall system log for more details."
-                    if x.tag == "rules":
-                        if not len(x):
-                            print "Row " + str(i) + " result: Rule not matched!"
-                        else:
-                            for child in x:
-                                print "Row " + str(i) + " result: " + child.text
+                if row['Source address']:
+                    csvcmd = '<source>' + row['Source address'] + '</source>'
+                if row['Source Zone']:
+                    csvcmd = csvcmd + '<from>' + row['Source Zone'] + '</from>'
+                if row['Destination address']:
+                    csvcmd = csvcmd + '<destination>' + row['Destination address'] + '</destination>'
+                if row['Destination Zone']:
+                    csvcmd = csvcmd + '<to>' + row['Destination Zone'] + '</to>'
+                if row['Source User']:
+                    csvcmd = csvcmd + '<source-user>' + row['Source User'] + '</source-user>'
+                if row['Application']:
+                    csvcmd = csvcmd + '<application>' + row['Application'] + '</application>'
+                if row['Destination Port']:
+                    csvcmd = csvcmd + '<destination-port>' + row['Destination Port'] + '</destination-port>'
+                if row['IP Protocol']:
+                    if row['IP Protocol'] == 'tcp':
+                        csvcmd = csvcmd + '<protocol>6</protocol>'
+                    if row['IP Protocol'] == 'udp':
+                        csvcmd = csvcmd + '<protocol>17</protocol>'
+                    if row['IP Protocol'] == 'icmp':
+                        csvcmd = csvcmd + '<protocol>1</protocol>'
+                    if row['IP Protocol'] == 'esp':
+                        csvcmd = csvcmd + '<protocol>50</protocol>'
+                    if row['IP Protocol'] == 'ah':
+                        csvcmd = csvcmd + '<protocol>51</protocol>'
+                if row['Category']:
+                    # ** Placeholder for Categories - custom categories error out.  possible bug **
+                    # csvcmd = csvcmd + '<category>' + row['Category'] + '</category>'
+                    csvcmd = csvcmd + '<category>any</category>'
             except:
-                print "Error parsing XML response."
                 pass
 
-            #    pass
-            # ** DEBUG - print API request string**
-            # print request_str + key
-            # print '\n'
+        conn = httplib.HTTPSConnection(ip, context=ssl._create_unverified_context())
+        request_str = "/api/?type=op&cmd=<test><security-policy-match>" + csvcmd + "</security-policy-match></test>&key="
+
+        conn.request("GET", request_str + key)
+        r = conn.getresponse()
+        data = r.read()
+        conn.close()
+        r.close()
+
+        try:
+            opresponse = etree.fromstring(data)
+
+            for x in opresponse.iter():
+                if x.tag == "response":
+                    if not x.attrib["status"] == "success":
+                        print "Test failed.  Check the firewall system log for more details."
+                if x.tag == "rules":
+                    if not len(x):
+                        print "Row " + str(i) + " result: Rule not matched!"
+                    else:
+                        for child in x:
+                            print "Row " + str(i) + " result: " + child.text
+        except:
+            print "Error parsing XML response."
+            pass
+
+        # ** DEBUG - print API request string**
+        # print request_str + key
+        # print '\n'
 
 
 def main():
